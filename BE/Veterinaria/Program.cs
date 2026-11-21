@@ -20,6 +20,7 @@ builder.Services.AddIdentity<Usuario, IdentityRole>()
     .AddEntityFrameworkStores<VeterinariaDbContext>()
     .AddDefaultTokenProviders();
 builder.Services.AddScoped<InicializadorIdentity>();
+builder.Services.AddScoped<DuenosService>();
 
 var jwtIssuer = builder.Configuration["Jwt:Issuer"]
     ?? throw new InvalidOperationException("Falta configurar 'Jwt:Issuer'.");
