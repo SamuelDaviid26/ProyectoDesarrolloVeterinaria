@@ -20,9 +20,9 @@ public class ExpedientesService(VeterinariaDbContext dbContext, UserManager<Usua
     private const string RolVeterinario = "Veterinario";
     private readonly HtmlSanitizer sanitizer = CrearSanitizer();
 
-    public async Task<IReadOnlyList<VacunaResponse>?> ListarVacunasAsync(int mascotaId)
+    public async Task<IReadOnlyList<VacunaResponse>?> ListarVacunasAsync(int mascotaId, string? duenoId = null)
     {
-        if (!await MascotaExisteAsync(mascotaId)) return null;
+        if (!await MascotaPerteneceAsync(mascotaId, duenoId)) return null;
         var hoyCostaRica = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-6));
         var vacunas = await dbContext.VacunasAplicadas.AsNoTracking().Where(v => v.MascotaId == mascotaId)
             .OrderByDescending(v => v.RegistradoEn).ThenByDescending(v => v.Id)
@@ -83,9 +83,9 @@ public class ExpedientesService(VeterinariaDbContext dbContext, UserManager<Usua
         return new(EstadoExpediente.Completado, response);
     }
 
-    public async Task<TratamientosResponse?> ListarTratamientosAsync(int mascotaId)
+    public async Task<TratamientosResponse?> ListarTratamientosAsync(int mascotaId, string? duenoId = null)
     {
-        if (!await MascotaExisteAsync(mascotaId)) return null;
+        if (!await MascotaPerteneceAsync(mascotaId, duenoId)) return null;
         var elementos = await dbContext.AsignacionesClinicas.AsNoTracking().Where(a => a.MascotaId == mascotaId)
             .OrderByDescending(a => a.AsignadoEn).ThenByDescending(a => a.Id)
             .Select(a => new TratamientoResponse(a.Id, a.ElementoCatalogoClinicoId,
@@ -146,13 +146,15 @@ public class ExpedientesService(VeterinariaDbContext dbContext, UserManager<Usua
         return new(EstadoExpediente.Completado);
     }
 
-    public async Task<IReadOnlyList<ExamenResponse>?> ListarExamenesAsync(int mascotaId)
+    public async Task<IReadOnlyList<ExamenResponse>?> ListarExamenesAsync(int mascotaId, string? duenoId = null)
     {
-        if (!await MascotaExisteAsync(mascotaId)) return null;
+        if (!await MascotaPerteneceAsync(mascotaId, duenoId)) return null;
         return await dbContext.Examenes.AsNoTracking().Where(e => e.MascotaId == mascotaId)
             .OrderByDescending(e => e.RegistradoEn).ThenByDescending(e => e.Id)
             .Select(e => new ExamenResponse(e.Id, e.Descripcion, e.RegistradoEn, e.ArchivoId,
-                e.Archivo!.NombreOriginal, e.Archivo.TipoContenido, $"/api/mascotas/{mascotaId}/examenes/{e.Id}/archivo",
+                e.Archivo!.NombreOriginal, e.Archivo.TipoContenido, duenoId == null
+                    ? $"/api/mascotas/{mascotaId}/examenes/{e.Id}/archivo"
+                    : $"/api/mis-mascotas/{mascotaId}/examenes/{e.Id}/archivo",
                 e.VeterinarioResponsableId, e.VeterinarioResponsable!.NombreCompleto,
                 e.RegistradoPorId, e.RegistradoPor!.NombreCompleto)).ToListAsync();
     }
@@ -186,17 +188,18 @@ public class ExpedientesService(VeterinariaDbContext dbContext, UserManager<Usua
         return new(EstadoExpediente.Completado, response);
     }
 
-    public async Task<ArchivoDescarga?> ObtenerArchivoExamenAsync(int mascotaId, int examenId)
+    public async Task<ArchivoDescarga?> ObtenerArchivoExamenAsync(int mascotaId, int examenId, string? duenoId = null)
     {
-        if (!await MascotaExisteAsync(mascotaId)) return null;
-        return await dbContext.Examenes.AsNoTracking().Where(e => e.Id == examenId && e.MascotaId == mascotaId)
+        if (!await MascotaPerteneceAsync(mascotaId, duenoId)) return null;
+        return await dbContext.Examenes.AsNoTracking().Where(e => e.Id == examenId && e.MascotaId == mascotaId &&
+                (duenoId == null || e.Mascota!.DuenoId == duenoId))
             .Select(e => new ArchivoDescarga(e.Archivo!.NombreOriginal, e.Archivo.TipoContenido, e.Archivo.Contenido))
             .SingleOrDefaultAsync();
     }
 
-    public async Task<IReadOnlyList<NotaResponse>?> ListarNotasAsync(int mascotaId)
+    public async Task<IReadOnlyList<NotaResponse>?> ListarNotasAsync(int mascotaId, string? duenoId = null)
     {
-        if (!await MascotaExisteAsync(mascotaId)) return null;
+        if (!await MascotaPerteneceAsync(mascotaId, duenoId)) return null;
         return await dbContext.NotasClinicas.AsNoTracking().Where(n => n.MascotaId == mascotaId)
             .OrderByDescending(n => n.RegistradoEn).ThenByDescending(n => n.Id)
             .Select(n => new NotaResponse(n.Id, n.ContenidoHtml, n.RegistradoEn,
@@ -244,6 +247,9 @@ public class ExpedientesService(VeterinariaDbContext dbContext, UserManager<Usua
     }
 
     private Task<bool> MascotaExisteAsync(int id) => dbContext.Mascotas.AnyAsync(m => m.Id == id);
+
+    private Task<bool> MascotaPerteneceAsync(int id, string? duenoId) =>
+        dbContext.Mascotas.AnyAsync(m => m.Id == id && (duenoId == null || m.DuenoId == duenoId));
 
     private static ResultadoExpediente<T> Invalid<T>(string error) => new(EstadoExpediente.DatosInvalidos, Error: error);
     private static ResultadoExpediente<T> Missing<T>() => new(EstadoExpediente.NoExiste);

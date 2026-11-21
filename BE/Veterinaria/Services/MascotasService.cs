@@ -80,10 +80,17 @@ public class MascotasService(VeterinariaDbContext dbContext)
             m.FotoId.HasValue ? $"/api/mascotas/{m.Id}/foto" : null))
         .SingleOrDefaultAsync();
 
-    public Task<FotoMascota?> ObtenerFotoAsync(int id) => dbContext.Mascotas.AsNoTracking()
-        .Where(m => m.Id == id)
+    public Task<FotoMascota?> ObtenerFotoAsync(int id, string? duenoId = null) => dbContext.Mascotas.AsNoTracking()
+        .Where(m => m.Id == id && (duenoId == null || m.DuenoId == duenoId))
         .Select(m => m.Foto == null ? null : new FotoMascota(m.Foto.TipoContenido, m.Foto.Contenido))
         .SingleOrDefaultAsync();
+
+    public async Task<IReadOnlyList<MiMascotaResponse>> ListarDelDuenoAsync(string duenoId) =>
+        await dbContext.Mascotas.AsNoTracking().Where(m => m.DuenoId == duenoId)
+            .OrderBy(m => m.Nombre).ThenBy(m => m.Id)
+            .Select(m => new MiMascotaResponse(m.Id, m.Nombre, m.Raza!.Especie!.Nombre, m.Raza.Nombre,
+                m.FotoId.HasValue ? $"/api/mis-mascotas/{m.Id}/foto" : null))
+            .ToListAsync();
 
     public async Task<MascotasListadoResponse> ListarAsync(string? nombre, string? cedulaDueno)
     {
