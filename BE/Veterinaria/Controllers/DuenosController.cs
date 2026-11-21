@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Veterinaria.Api.DTOs.Auth;
+using Veterinaria.Api.DTOs.Duenos;
 using Veterinaria.Api.Services;
 
 namespace Veterinaria.Api.Controllers;
@@ -33,11 +34,25 @@ public class DuenosController(DuenosService duenosService) : ControllerBase
         }
 
         var usuario = resultado.Usuario!;
-        return StatusCode(StatusCodes.Status201Created, new
+        return StatusCode(StatusCodes.Status201Created,
+            new DuenoResponse(usuario.Id, usuario.Cedula, usuario.NombreCompleto));
+    }
+
+    [Authorize(Roles = "Administrador,Veterinario")]
+    [HttpGet("por-cedula")]
+    public async Task<ActionResult<DuenoResponse>> BuscarPorCedula([FromQuery] string? cedula)
+    {
+        if (string.IsNullOrWhiteSpace(cedula))
         {
-            id = usuario.Id,
-            cedula = usuario.Cedula,
-            nombreCompleto = usuario.NombreCompleto
-        });
+            return BadRequest(new { mensaje = "La cédula es obligatoria." });
+        }
+
+        var dueno = await duenosService.BuscarPorCedulaAsync(cedula);
+        if (dueno is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(dueno);
     }
 }

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Veterinaria.Api.Data;
 using Veterinaria.Api.DTOs.Auth;
+using Veterinaria.Api.DTOs.Duenos;
 using Veterinaria.Api.Models;
 
 namespace Veterinaria.Api.Services;
@@ -81,6 +82,19 @@ public class DuenosService(UserManager<Usuario> userManager, VeterinariaDbContex
 
             throw;
         }
+    }
+
+    public async Task<DuenoResponse?> BuscarPorCedulaAsync(string cedula)
+    {
+        var cedulaNormalizada = cedula.Trim();
+
+        return await (
+            from usuario in dbContext.Users
+            join usuarioRol in dbContext.UserRoles on usuario.Id equals usuarioRol.UserId
+            join rol in dbContext.Roles on usuarioRol.RoleId equals rol.Id
+            where usuario.Cedula == cedulaNormalizada && rol.Name == RolDueno
+            select new DuenoResponse(usuario.Id, usuario.Cedula, usuario.NombreCompleto)
+        ).FirstOrDefaultAsync();
     }
 
     private static bool EsConflicto(IdentityResult resultado)
