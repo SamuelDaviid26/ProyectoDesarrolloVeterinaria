@@ -22,6 +22,7 @@ builder.Services.AddIdentity<Usuario, IdentityRole>()
 builder.Services.AddScoped<InicializadorIdentity>();
 builder.Services.AddScoped<DuenosService>();
 builder.Services.AddScoped<EspeciesService>();
+builder.Services.AddScoped<RazasService>();
 
 var jwtIssuer = builder.Configuration["Jwt:Issuer"]
     ?? throw new InvalidOperationException("Falta configurar 'Jwt:Issuer'.");
