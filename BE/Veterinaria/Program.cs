@@ -25,6 +25,7 @@ builder.Services.AddScoped<EspeciesService>();
 builder.Services.AddScoped<RazasService>();
 builder.Services.AddScoped<CatalogoClinicoService>();
 builder.Services.AddScoped<VeterinariosService>();
+builder.Services.AddScoped<UsuariosService>();
 
 var jwtIssuer = builder.Configuration["Jwt:Issuer"]
     ?? throw new InvalidOperationException("Falta configurar 'Jwt:Issuer'.");
