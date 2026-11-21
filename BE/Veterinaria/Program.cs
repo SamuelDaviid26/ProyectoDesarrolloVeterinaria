@@ -75,7 +75,14 @@ builder.Services.AddAuthentication(options =>
                 if (usuario is null || usuario.Bloqueado)
                 {
                     context.Fail("La cuenta no está disponible.");
+                    return;
                 }
+
+                var rolesActuales = await userManager.GetRolesAsync(usuario);
+                var rolesToken = context.Principal?.FindAll(ClaimTypes.Role).Select(claim => claim.Value).Distinct()
+                    ?? Enumerable.Empty<string>();
+                if (rolesToken.Any(rol => !rolesActuales.Contains(rol, StringComparer.Ordinal)))
+                    context.Fail("Los permisos del token ya no están vigentes.");
             }
         };
     });
