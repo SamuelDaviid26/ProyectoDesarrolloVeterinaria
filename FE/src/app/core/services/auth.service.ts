@@ -50,19 +50,29 @@ export class AuthService {
     if (!this.isBrowser) {
       return null;
     }
+
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
       return null;
     }
+
     try {
       const parsed = JSON.parse(raw) as AuthSession;
-      if (!parsed.token || !parsed.expiraEnUtc) {
+      if (!parsed?.token || !parsed?.expiraEnUtc) {
         return null;
       }
-      if (Date.parse(parsed.expiraEnUtc) <= Date.now()) {
+
+      const expMs = this.parsearFechaUtcMs(parsed.expiraEnUtc);
+      if (expMs === null) {
+        return parsed;
+      }
+
+      // Margen de 5 segundos para evitar expiraciones falsas por milisegundos
+      if (expMs <= Date.now() - 5000) {
         this.logout(false);
         return null;
       }
+
       return parsed;
     } catch {
       return null;
@@ -90,5 +100,12 @@ export class AuthService {
     if (this.isBrowser) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(sesion));
     }
+  }
+
+  private parsearFechaUtcMs(fecha: string): number | null {
+    const tieneZona = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(fecha.trim());
+    const normalizada = tieneZona ? fecha.trim() : `${fecha.trim()}Z`;
+    const ms = Date.parse(normalizada);
+    return Number.isNaN(ms) ? null : ms;
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -64,12 +64,14 @@ export class MascotasListadoComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly vetService: VeterinariaService,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly cdr: ChangeDetectorRef
   ) {}
 
   async ngOnInit(): Promise<void> {
     this.rolActual = this.authService.obtenerRol() ?? 'Veterinario';
     await Promise.all([this.cargarMascotas(), this.cargarCatalogosBase()]);
+    this.cdr.detectChanges();
   }
 
   ngOnDestroy(): void {
@@ -93,6 +95,8 @@ export class MascotasListadoComponent implements OnInit, OnDestroy {
   async cargarMascotas(): Promise<void> {
     this.cargando = true;
     this.mensajeError = '';
+    this.cdr.detectChanges();
+
     try {
       const res = await firstValueFrom(
         this.vetService.listarMascotas({
@@ -114,6 +118,7 @@ export class MascotasListadoComponent implements OnInit, OnDestroy {
       this.mensajeError = httpErr?.error?.mensaje || 'No se pudo cargar el listado de mascotas.';
     } finally {
       this.cargando = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -121,6 +126,7 @@ export class MascotasListadoComponent implements OnInit, OnDestroy {
     try {
       const blob = await firstValueFrom(this.vetService.obtenerArchivoBlob(fotoUrl));
       this.fotosUrl[mascotaId] = URL.createObjectURL(blob);
+      this.cdr.detectChanges();
     } catch {
     }
   }
@@ -144,6 +150,8 @@ export class MascotasListadoComponent implements OnInit, OnDestroy {
       this.razasFiltradas = razas;
     } catch {
     }
+
+    this.cdr.detectChanges();
   }
 
   abrirModalCrear(): void {
@@ -186,9 +194,11 @@ export class MascotasListadoComponent implements OnInit, OnDestroy {
         foto: null
       };
       this.modalAbierto = true;
+      this.cdr.detectChanges();
     } catch (err: unknown) {
       const httpErr = err as { error?: { mensaje?: string } };
       this.mensajeError = httpErr?.error?.mensaje || 'No se pudo cargar la mascota.';
+      this.cdr.detectChanges();
     }
   }
 
@@ -225,6 +235,8 @@ export class MascotasListadoComponent implements OnInit, OnDestroy {
         httpErr?.status === 404
           ? 'No se encontró un dueño con esa cédula. Podés crearlo abajo.'
           : httpErr?.error?.mensaje || 'Error al buscar el dueño.';
+    } finally {
+      this.cdr.detectChanges();
     }
   }
 
@@ -253,6 +265,8 @@ export class MascotasListadoComponent implements OnInit, OnDestroy {
         (Array.isArray(httpErr?.error?.errores)
           ? httpErr.error.errores.join(', ')
           : 'No se pudo crear el dueño.');
+    } finally {
+      this.cdr.detectChanges();
     }
   }
 
@@ -286,6 +300,7 @@ export class MascotasListadoComponent implements OnInit, OnDestroy {
     }
 
     this.guardandoMascota = true;
+    this.cdr.detectChanges();
     try {
       if (this.editandoMascotaId) {
         await firstValueFrom(
@@ -302,6 +317,7 @@ export class MascotasListadoComponent implements OnInit, OnDestroy {
       this.errorModal = httpErr?.error?.mensaje || 'No se pudo guardar la mascota.';
     } finally {
       this.guardandoMascota = false;
+      this.cdr.detectChanges();
     }
   }
 }
