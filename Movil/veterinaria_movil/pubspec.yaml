@@ -1,0 +1,26 @@
+name: veterinaria_movil
+description: "Aplicación móvil para que los dueños consulten el expediente de sus mascotas."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_file_dialog: ^3.3.6
+  flutter_secure_storage: ^11.2.0
+  flutter_widget_from_html_core: ^0.17.4
+  http: ^1.6.0
+  pdfx: ^2.11.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/logo.png
