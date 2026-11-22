@@ -162,3 +162,58 @@ export interface CrearNotaRequest {
   contenidoHtml: string;
   veterinarioResponsableId?: number | null;
 }
+
+// ---------- Módulo de administración ----------
+
+export type TipoCatalogo = 'Medicamento' | 'Tratamiento';
+
+export interface EspecieRequest {
+  nombre: string;
+}
+
+export interface RazaRequest {
+  nombre: string;
+  especieId: number;
+}
+
+export interface CatalogoClinicoRequest {
+  nombre: string;
+  tipo: TipoCatalogo;
+  descripcion: string;
+}
+
+export interface VeterinarioResponse {
+  id: number;
+  nombreCompleto: string;
+  numeroColegiado: string;
+  fotoUrl: string | null;
+}
+
+export interface UsuarioResponse {
+  id: string;
+  cedula: string;
+  nombreCompleto: string;
+  correo: string;
+  rol: RolUsuario | string;
+  bloqueado: boolean;
+  veterinarioId: number | null;
+}
+
+export interface CrearUsuarioRequest {
+  cedula: string;
+  nombreCompleto: string;
+  correo: string;
+  contrasena: string;
+  rol: RolUsuario;
+  veterinarioId: number | null;
+}
+
+export interface ActualizarUsuarioRequest {
+  cedula: string;
+  nombreCompleto: string;
+  correo: string;
+  rol: RolUsuario;
+  /** null = no cambiar la contraseña */
+  contrasena: string | null;
+  veterinarioId: number | null;
+}

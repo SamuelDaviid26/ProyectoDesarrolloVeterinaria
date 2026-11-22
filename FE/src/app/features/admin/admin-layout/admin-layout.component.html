@@ -1,0 +1,49 @@
+<div class="vet-page min-h-screen text-slate-800">
+  <header class="vet-header text-white border-b-4 sticky top-0 z-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="vet-logo-ring w-10 h-10 rounded-full border overflow-hidden shrink-0 flex items-center justify-center">
+          <img src="/logo.png" alt="Logo" class="w-full h-full object-cover" />
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight">Módulo de Administración</h1>
+          <p class="text-xs text-slate-200/85">
+            Rol activo: <span class="vet-role-highlight font-semibold">Administrador</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <a
+          routerLink="/veterinaria"
+          class="vet-btn-palta text-white text-sm font-semibold px-4 py-2 rounded-xl shadow-xs transition"
+        >
+          Ir a Veterinaria
+        </a>
+        <button
+          type="button"
+          (click)="cerrarSesion()"
+          class="vet-btn-purple text-white text-sm font-medium px-3.5 py-2 rounded-xl border transition cursor-pointer"
+        >
+          Cerrar sesión
+        </button>
+      </div>
+    </div>
+
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 mt-3 flex gap-1 overflow-x-auto">
+      @for (seccion of secciones; track seccion.ruta) {
+        <a
+          [routerLink]="seccion.ruta"
+          routerLinkActive="vet-tab-active"
+          class="vet-tab text-sm font-semibold px-4 py-2.5 whitespace-nowrap transition"
+        >
+          {{ seccion.titulo }}
+        </a>
+      }
+    </nav>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <router-outlet />
+  </main>
+</div>

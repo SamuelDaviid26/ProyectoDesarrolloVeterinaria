@@ -5,13 +5,15 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subject, firstValueFrom, takeUntil } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { VeterinariaService } from '../../../core/services/veterinaria.service';
+import { AdminService } from '../../../core/services/admin.service';
 import {
   CatalogoClinicoResponse,
   ExamenResponse,
   MascotaResponse,
   NotaResponse,
   TratamientoResponse,
-  VacunaResponse
+  VacunaResponse,
+  VeterinarioResponse
 } from '../../../core/models/api.models';
 
 @Component({
@@ -33,6 +35,8 @@ export class ExpedienteMascotaComponent implements OnInit, OnDestroy {
 
   pestanaActiva: 'vacunas' | 'tratamientos' | 'examenes' | 'notas' = 'vacunas';
   esAdministrador = false;
+  /** Solo se carga para el Administrador: debe indicar qué veterinario es el responsable (autoría). */
+  veterinarios: VeterinarioResponse[] = [];
 
   mensajeError = '';
   mensajeExito = '';
@@ -69,11 +73,15 @@ export class ExpedienteMascotaComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly vetService: VeterinariaService,
     private readonly authService: AuthService,
+    private readonly adminService: AdminService,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.esAdministrador = this.authService.obtenerRol() === 'Administrador';
+    if (this.esAdministrador) {
+      this.cargarVeterinarios();
+    }
 
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       const id = Number(params.get('id'));
@@ -245,10 +253,18 @@ export class ExpedienteMascotaComponent implements OnInit, OnDestroy {
   }
 
   async suspenderTratamiento(tratamientoId: number): Promise<void> {
-    this.limpiarMensajes();
+    // El Administrador también debe indicar el veterinario responsable de la suspensión;
+    // se usa el mismo que está seleccionado en el formulario de tratamientos.
+    this.validarAdmin(this.nuevoTratamiento.veterinarioResponsableId);
+    if (this.mensajeError) {
+      this.refrescarVista();
+      return;
+    }
     try {
       await firstValueFrom(
-        this.vetService.suspenderTratamiento(this.mascotaId, tratamientoId, {})
+        this.vetService.suspenderTratamiento(this.mascotaId, tratamientoId, {
+          veterinarioResponsableId: this.esAdministrador ? this.nuevoTratamiento.veterinarioResponsableId : null
+        })
       );
       this.mensajeExito = 'Tratamiento suspendido.';
       await this.cargarTratamientos();
@@ -375,7 +391,19 @@ export class ExpedienteMascotaComponent implements OnInit, OnDestroy {
   private validarAdmin(vetId: number | null): void {
     this.limpiarMensajes();
     if (this.esAdministrador && (!vetId || vetId <= 0)) {
-      this.mensajeError = 'Como Administrador, indicá un ID de veterinario responsable válido.';
+      this.mensajeError = 'Como Administrador, seleccioná el veterinario responsable.';
     }
+  }
+
+  private cargarVeterinarios(): void {
+    this.adminService.listarVeterinarios().subscribe({
+      next: (vets) => {
+        this.veterinarios = vets;
+        this.refrescarVista();
+      },
+      error: () => {
+        this.veterinarios = [];
+      }
+    });
   }
 }

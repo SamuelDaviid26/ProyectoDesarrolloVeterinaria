@@ -20,6 +20,14 @@
       </div>
 
       <div class="flex items-center gap-2.5">
+        @if (rolActual === 'Administrador') {
+          <a
+            routerLink="/admin"
+            class="vet-btn-blue border border-white/30 text-white text-sm font-semibold px-4 py-2 rounded-xl transition"
+          >
+            Administración
+          </a>
+        }
         <button
           type="button"
           (click)="abrirModalCrear()"
