@@ -1,0 +1,103 @@
+<div class="vet-page min-h-screen text-slate-800 flex flex-col justify-between">
+  <header class="vet-header text-white border-b-4">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div
+          class="vet-logo-ring w-10 h-10 rounded-full border overflow-hidden shrink-0 flex items-center justify-center"
+        >
+          <img
+            src="/logo.png"
+            alt="Logo"
+            class="w-full h-full object-cover"
+          />
+        </div>
+        <div>
+          <p class="vet-brand-title text-sm font-bold tracking-wide uppercase">Hospital Veterinario</p>
+          <p class="vet-brand-subtitle text-xs">Sistema Clínico · Portal Veterinario</p>
+        </div>
+      </div>
+      <span
+        class="vet-badge hidden sm:inline-block text-xs font-medium px-3 py-1 rounded-full border"
+      >
+        Atención Clínica Digital
+      </span>
+    </div>
+  </header>
+
+  <main class="flex-1 flex items-center justify-center px-4 py-10">
+    <div
+      class="vet-card w-full max-w-md bg-white rounded-2xl shadow-lg border overflow-hidden"
+    >
+      <div class="vet-card-header px-7 py-6 text-white">
+        <h1 class="text-2xl font-bold tracking-tight">Iniciar sesión</h1>
+        <p class="vet-card-subtitle text-sm mt-1">
+          Ingresá con tu cuenta de Veterinario o Administrador
+        </p>
+      </div>
+
+      <div class="p-7">
+        @if (avisoPermisos) {
+          <div
+            class="mb-4 rounded-xl bg-amber-50 border border-amber-300 px-4 py-3 text-sm text-amber-900"
+          >
+            Tu cuenta no tiene permisos para acceder a este módulo web.
+          </div>
+        }
+
+        @if (mensajeError) {
+          <div
+            class="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"
+          >
+            {{ mensajeError }}
+          </div>
+        }
+
+        <form (ngSubmit)="onSubmit()" class="space-y-4">
+          <div>
+            <label for="correo" class="block text-sm font-semibold text-slate-700 mb-1.5">
+              Correo electrónico
+            </label>
+            <input
+              id="correo"
+              name="correo"
+              type="email"
+              required
+              [(ngModel)]="correo"
+              placeholder="medico@hospitalveterinario.cr"
+              class="vet-input w-full rounded-xl border border-slate-300 bg-slate-50/60 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white transition"
+            />
+          </div>
+
+          <div>
+            <label for="contrasena" class="block text-sm font-semibold text-slate-700 mb-1.5">
+              Contraseña
+            </label>
+            <input
+              id="contrasena"
+              name="contrasena"
+              type="password"
+              required
+              [(ngModel)]="contrasena"
+              placeholder="••••••••"
+              class="vet-input w-full rounded-xl border border-slate-300 bg-slate-50/60 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white transition"
+            />
+          </div>
+
+          <button
+            type="submit"
+            [disabled]="cargando"
+            class="vet-btn-primary w-full mt-2 rounded-xl disabled:opacity-50 text-white font-semibold py-2.5 px-4 shadow-sm transition cursor-pointer"
+          >
+            {{ cargando ? 'Verificando credenciales...' : 'Entrar al sistema' }}
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <footer
+    class="bg-white border-t border-slate-200 py-4 px-6 text-center text-xs text-slate-500"
+  >
+    Hospital Veterinario · Gestión de Pacientes y Expedientes Clínicos
+  </footer>
+</div>

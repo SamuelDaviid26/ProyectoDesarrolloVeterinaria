@@ -1,0 +1,387 @@
+<div class="vet-page min-h-screen text-slate-800">
+  <header class="vet-header text-white border-b-4 sticky top-0 z-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div
+          class="vet-logo-ring w-10 h-10 rounded-full border overflow-hidden shrink-0 flex items-center justify-center"
+        >
+          <img
+            src="/logo.png"
+            alt="Logo"
+            class="w-full h-full object-cover"
+          />
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight">Módulo de Veterinaria</h1>
+          <p class="text-xs text-slate-200/85">
+            Rol activo: <span class="vet-role-highlight font-semibold">{{ rolActual }}</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <button
+          type="button"
+          (click)="abrirModalCrear()"
+          class="vet-btn-palta text-white text-sm font-semibold px-4 py-2 rounded-xl shadow-xs transition cursor-pointer"
+        >
+          + Nueva mascota
+        </button>
+        <button
+          type="button"
+          (click)="cerrarSesion()"
+          class="vet-btn-purple text-white text-sm font-medium px-3.5 py-2 rounded-xl border transition cursor-pointer"
+        >
+          Cerrar sesión
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+    <section class="vet-panel bg-white rounded-2xl border p-5 shadow-xs">
+      <form (ngSubmit)="buscarMascotas()" class="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-end">
+        <div class="md:col-span-5">
+          <label class="block text-xs font-semibold uppercase tracking-wide text-slate-600 mb-1.5">
+            Nombre de mascota
+          </label>
+          <input
+            type="text"
+            name="filtroNombre"
+            [(ngModel)]="filtroNombre"
+            placeholder="Ej. Luna, Rocky..."
+            class="vet-input w-full rounded-xl border border-slate-300 bg-slate-50/60 px-3.5 py-2 text-sm focus:bg-white transition"
+          />
+        </div>
+
+        <div class="md:col-span-4">
+          <label class="block text-xs font-semibold uppercase tracking-wide text-slate-600 mb-1.5">
+            Cédula del dueño
+          </label>
+          <input
+            type="text"
+            name="filtroCedula"
+            [(ngModel)]="filtroCedula"
+            placeholder="Ej. 101230456"
+            class="vet-input w-full rounded-xl border border-slate-300 bg-slate-50/60 px-3.5 py-2 text-sm focus:bg-white transition"
+          />
+        </div>
+
+        <div class="md:col-span-3 flex gap-2">
+          <button
+            type="submit"
+            class="vet-btn-blue flex-1 rounded-xl text-white text-sm font-semibold px-4 py-2 transition cursor-pointer"
+          >
+            Buscar
+          </button>
+          <button
+            type="button"
+            (click)="limpiarFiltros()"
+            class="rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-sm px-3 py-2 transition cursor-pointer"
+          >
+            Limpiar
+          </button>
+        </div>
+      </form>
+    </section>
+
+    @if (mensajeError) {
+      <div class="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+        {{ mensajeError }}
+      </div>
+    }
+
+    @if (cargando) {
+      <div class="bg-white rounded-2xl border border-slate-200 p-10 text-center text-sm text-slate-500">
+        Cargando pacientes...
+      </div>
+    } @else {
+      <section class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="vet-section-title text-lg font-bold">
+            Atenciones recientes ({{ atencionesRecientes.length }})
+          </h2>
+          <span class="text-xs text-slate-500">Ordenadas de más reciente a menos reciente</span>
+        </div>
+
+        @if (atencionesRecientes.length === 0) {
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 text-center text-sm text-slate-500">
+            No hay pacientes con atenciones registradas para este filtro.
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @for (mascota of atencionesRecientes; track mascota.id) {
+              <ng-container *ngTemplateOutlet="tarjetaMascota; context: { $implicit: mascota }"></ng-container>
+            }
+          </div>
+        }
+      </section>
+
+      <section class="space-y-3 pt-2">
+        <h2 class="vet-section-title text-lg font-bold">
+          Sin atenciones registradas ({{ sinAtenciones.length }})
+        </h2>
+
+        @if (sinAtenciones.length === 0) {
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 text-center text-sm text-slate-500">
+            No hay pacientes sin atenciones para este filtro.
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @for (mascota of sinAtenciones; track mascota.id) {
+              <ng-container *ngTemplateOutlet="tarjetaMascota; context: { $implicit: mascota }"></ng-container>
+            }
+          </div>
+        }
+      </section>
+    }
+  </main>
+
+  <ng-template #tarjetaMascota let-m>
+    <article
+      class="vet-panel bg-white rounded-2xl border p-4 shadow-xs hover:shadow-md transition flex flex-col justify-between gap-4"
+    >
+      <div class="flex items-start gap-3.5">
+        <div
+          class="vet-photo-box w-16 h-16 rounded-xl border overflow-hidden shrink-0 flex items-center justify-center"
+        >
+          @if (fotosUrl[m.id]) {
+            <img [src]="fotosUrl[m.id]" [alt]="m.nombre" class="w-full h-full object-cover" />
+          } @else {
+            <span class="text-xs font-semibold text-slate-400">Sin foto</span>
+          }
+        </div>
+
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="font-bold text-slate-900 truncate">{{ m.nombre }}</h3>
+            <span
+              class="vet-species-badge text-xs font-semibold border px-2.5 py-0.5 rounded-full shrink-0"
+            >
+              {{ m.especieNombre }}
+            </span>
+          </div>
+          <p class="text-xs text-slate-600 mt-0.5">{{ m.razaNombre }} · Nac: {{ m.fechaNacimiento }}</p>
+          <p class="text-xs text-slate-500 mt-1 truncate">
+            Dueño: <span class="font-semibold text-slate-700">{{ m.duenoNombreCompleto }}</span> ({{ m.duenoCedula }})
+          </p>
+          @if (m.ultimaAtencion) {
+            <p class="vet-last-visit text-[11px] font-semibold mt-1">
+              Última atención: {{ m.ultimaAtencion | date: 'short' }}
+            </p>
+          }
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+        <button
+          type="button"
+          (click)="abrirModalEditar(m.id)"
+          class="rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-medium px-3 py-1.5 transition cursor-pointer"
+        >
+          Editar
+        </button>
+        <a
+          [routerLink]="['/veterinaria/mascotas', m.id, 'expediente']"
+          class="vet-btn-blue text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg transition"
+        >
+          Ver expediente
+        </a>
+      </div>
+    </article>
+  </ng-template>
+
+  @if (modalAbierto) {
+    <div class="fixed inset-0 z-30 bg-slate-950/50 flex items-center justify-center p-4 overflow-y-auto">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-xl p-6 space-y-4 my-8">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <h2 class="vet-section-title text-lg font-bold">
+            {{ editandoMascotaId ? 'Editar mascota' : 'Registrar nueva mascota' }}
+          </h2>
+          <button
+            type="button"
+            (click)="cerrarModal()"
+            class="text-slate-400 hover:text-slate-600 text-sm font-medium cursor-pointer"
+          >
+            Cerrar ✕
+          </button>
+        </div>
+
+        @if (errorModal) {
+          <div class="rounded-lg bg-red-50 border border-red-200 px-3.5 py-2.5 text-xs text-red-700">
+            {{ errorModal }}
+          </div>
+        }
+
+        <form (ngSubmit)="guardarMascota()" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre *</label>
+              <input
+                type="text"
+                name="formNombre"
+                required
+                [(ngModel)]="formMascota.nombre"
+                class="vet-input w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Sexo *</label>
+              <select
+                name="formSexo"
+                required
+                [(ngModel)]="formMascota.sexo"
+                class="vet-input w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white"
+              >
+                <option value="">Seleccionar...</option>
+                <option value="Macho">Macho</option>
+                <option value="Hembra">Hembra</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Especie *</label>
+              <select
+                name="formEspecie"
+                [(ngModel)]="especieSeleccionadaId"
+                (ngModelChange)="alCambiarEspecie($event)"
+                class="vet-input w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white"
+              >
+                <option [ngValue]="null">Seleccionar...</option>
+                @for (esp of especies; track esp.id) {
+                  <option [ngValue]="esp.id">{{ esp.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Raza *</label>
+              <select
+                name="formRaza"
+                [(ngModel)]="formMascota.razaId"
+                class="vet-input w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white"
+              >
+                <option [ngValue]="0">Seleccionar...</option>
+                @for (raza of razasFiltradas; track raza.id) {
+                  <option [ngValue]="raza.id">{{ raza.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Fecha nacimiento *</label>
+              <input
+                type="date"
+                name="formFechaNac"
+                required
+                [(ngModel)]="formMascota.fechaNacimiento"
+                class="vet-input w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              />
+            </div>
+          </div>
+
+          <div class="vet-owner-box rounded-xl border p-3.5 space-y-2.5">
+            <label class="vet-owner-title block text-xs font-bold">Dueño de la mascota *</label>
+            <div class="flex gap-2">
+              <input
+                type="text"
+                name="cedulaBusquedaDueno"
+                [(ngModel)]="cedulaBusquedaDueno"
+                placeholder="Buscar dueño por cédula..."
+                class="vet-input flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm bg-white"
+              />
+              <button
+                type="button"
+                (click)="buscarDueno()"
+                class="vet-btn-blue text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg cursor-pointer"
+              >
+                Buscar
+              </button>
+            </div>
+
+            @if (duenoEncontrado) {
+              <div
+                class="vet-owner-found text-xs border rounded-lg px-3 py-2"
+              >
+                Seleccionado: <strong>{{ duenoEncontrado.nombreCompleto }}</strong> ({{ duenoEncontrado.cedula }})
+              </div>
+            } @else {
+              <p class="text-xs text-slate-500">Si no existe, crealo aquí:</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                <input
+                  type="text"
+                  name="nuevoDuenoCedula"
+                  [(ngModel)]="nuevoDueno.cedula"
+                  placeholder="Cédula"
+                  class="vet-input rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs bg-white"
+                />
+                <input
+                  type="text"
+                  name="nuevoDuenoNombre"
+                  [(ngModel)]="nuevoDueno.nombreCompleto"
+                  placeholder="Nombre completo"
+                  class="vet-input rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs bg-white"
+                />
+                <input
+                  type="email"
+                  name="nuevoDuenoCorreo"
+                  [(ngModel)]="nuevoDueno.correo"
+                  placeholder="Correo electrónico"
+                  class="vet-input rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs bg-white"
+                />
+                <div class="flex gap-1.5">
+                  <input
+                    type="password"
+                    name="nuevoDuenoPass"
+                    [(ngModel)]="nuevoDueno.contrasena"
+                    placeholder="Contraseña"
+                    class="vet-input flex-1 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs bg-white"
+                  />
+                  <button
+                    type="button"
+                    (click)="crearDuenoRapido()"
+                    class="vet-btn-palta text-white text-xs font-semibold px-3 py-1.5 rounded-lg cursor-pointer"
+                  >
+                    Crear
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
+              Fotografía (JPEG o PNG) {{ editandoMascotaId ? '(opcional)' : '*' }}
+            </label>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+              (change)="onArchivoSeleccionado($event)"
+              class="vet-file-input block w-full text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold"
+            />
+          </div>
+
+          <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+            <button
+              type="button"
+              (click)="cerrarModal()"
+              class="rounded-lg border border-slate-300 text-slate-700 text-sm px-4 py-2 cursor-pointer"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              [disabled]="guardandoMascota"
+              class="vet-btn-palta disabled:opacity-50 text-white text-sm font-semibold px-5 py-2 rounded-lg cursor-pointer"
+            >
+              {{ guardandoMascota ? 'Guardando...' : 'Guardar' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>
