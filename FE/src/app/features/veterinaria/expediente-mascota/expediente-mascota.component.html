@@ -1,0 +1,478 @@
+<div class="vet-page min-h-screen text-slate-800">
+  <header class="vet-header text-white border-b-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <a
+          routerLink="/veterinaria"
+          class="vet-btn-purple text-white text-xs font-semibold px-3 py-2 rounded-xl border transition"
+        >
+          ← Volver a pacientes
+        </a>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight">Expediente Clínico</h1>
+          @if (mascota) {
+            <p class="vet-header-subtitle text-xs">
+              {{ mascota.nombre }} · {{ mascota.especieNombre }} ({{ mascota.razaNombre }}) · Dueño:
+              {{ mascota.duenoNombreCompleto }}
+            </p>
+          }
+        </div>
+      </div>
+
+      <button
+        type="button"
+        (click)="cerrarSesion()"
+        class="vet-btn-purple text-white text-xs font-medium px-3.5 py-2 rounded-xl border transition cursor-pointer"
+      >
+        Cerrar sesión
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+    @if (mensajeError) {
+      <div class="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+        {{ mensajeError }}
+      </div>
+    }
+
+    @if (mensajeExito) {
+      <div class="vet-badge-palta rounded-xl border border-emerald-200 px-4 py-3 text-sm">
+        {{ mensajeExito }}
+      </div>
+    }
+
+    @if (mascota) {
+      <section class="vet-panel bg-white rounded-2xl border p-5 shadow-xs flex flex-wrap items-center gap-5">
+        <div class="vet-photo-box w-20 h-20 rounded-2xl border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
+          @if (fotoMascotaUrl) {
+            <img [src]="fotoMascotaUrl" [alt]="mascota.nombre" class="w-full h-full object-cover" />
+          } @else {
+            <span class="text-xs font-semibold text-slate-400">Sin foto</span>
+          }
+        </div>
+        <div class="space-y-1">
+          <h2 class="vet-title text-xl font-bold">{{ mascota.nombre }}</h2>
+          <p class="text-sm text-slate-600">
+            <strong>Especie:</strong> {{ mascota.especieNombre }} · <strong>Raza:</strong> {{ mascota.razaNombre }} ·
+            <strong>Sexo:</strong> {{ mascota.sexo }} · <strong>Nacimiento:</strong> {{ mascota.fechaNacimiento }}
+          </p>
+          <p class="text-xs text-slate-500">
+            <strong>Dueño:</strong> {{ mascota.duenoNombreCompleto }} (Cédula: {{ mascota.duenoCedula }})
+          </p>
+        </div>
+      </section>
+
+      <div class="flex flex-wrap gap-2">
+        <button
+          type="button"
+          (click)="pestanaActiva = 'vacunas'"
+          [class]="pestanaActiva === 'vacunas' ? 'vet-tab-active' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'"
+          class="rounded-xl px-4 py-2 text-sm font-semibold transition cursor-pointer"
+        >
+          Vacunas ({{ vacunas.length }})
+        </button>
+        <button
+          type="button"
+          (click)="pestanaActiva = 'tratamientos'"
+          [class]="pestanaActiva === 'tratamientos' ? 'vet-tab-active' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'"
+          class="rounded-xl px-4 py-2 text-sm font-semibold transition cursor-pointer"
+        >
+          Tratamientos ({{ tratamientosVigentes.length }} vigentes)
+        </button>
+        <button
+          type="button"
+          (click)="pestanaActiva = 'examenes'"
+          [class]="pestanaActiva === 'examenes' ? 'vet-tab-active' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'"
+          class="rounded-xl px-4 py-2 text-sm font-semibold transition cursor-pointer"
+        >
+          Exámenes ({{ examenes.length }})
+        </button>
+        <button
+          type="button"
+          (click)="pestanaActiva = 'notas'"
+          [class]="pestanaActiva === 'notas' ? 'vet-tab-active' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'"
+          class="rounded-xl px-4 py-2 text-sm font-semibold transition cursor-pointer"
+        >
+          Notas clínicas ({{ notas.length }})
+        </button>
+      </div>
+
+      @if (pestanaActiva === 'vacunas') {
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <form
+            (ngSubmit)="registrarVacuna()"
+            class="vet-panel lg:col-span-5 bg-white rounded-2xl border p-5 shadow-xs space-y-3.5 h-fit"
+          >
+            <h3 class="vet-title text-base font-bold">Registrar vacuna</h3>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre de vacuna *</label>
+              <input
+                type="text"
+                name="nombreVacuna"
+                required
+                [(ngModel)]="nuevaVacuna.nombreVacuna"
+                placeholder="Ej. Séxtuple, Antirrábica..."
+                class="vet-input w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Fecha aplicación *</label>
+                <input
+                  type="date"
+                  name="fechaAplicacion"
+                  required
+                  [(ngModel)]="nuevaVacuna.fechaAplicacion"
+                  class="vet-input w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Próxima dosis</label>
+                <input
+                  type="date"
+                  name="fechaProximaDosis"
+                  [(ngModel)]="nuevaVacuna.fechaProximaDosis"
+                  class="vet-input w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Dosis anterior (opcional)</label>
+              <select
+                name="vacunaAnteriorId"
+                [(ngModel)]="nuevaVacuna.vacunaAnteriorId"
+                class="vet-input w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white"
+              >
+                <option [ngValue]="null">Ninguna (primera dosis)</option>
+                @for (v of vacunas; track v.id) {
+                  <option [ngValue]="v.id">#{{ v.id }} - {{ v.nombreVacuna }} ({{ v.fechaAplicacion }})</option>
+                }
+              </select>
+            </div>
+
+            @if (esAdministrador) {
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">ID Veterinario responsable *</label>
+                <input
+                  type="number"
+                  name="vetVacuna"
+                  [(ngModel)]="nuevaVacuna.veterinarioResponsableId"
+                  class="vet-input w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                />
+              </div>
+            }
+
+            <button
+              type="submit"
+              class="vet-btn-palta w-full rounded-xl text-white text-sm font-semibold py-2.5 cursor-pointer"
+            >
+              Guardar vacuna
+            </button>
+          </form>
+
+          <div class="lg:col-span-7 space-y-3">
+            @for (v of vacunas; track v.id) {
+              <article class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-1.5">
+                <div class="flex items-center justify-between gap-2">
+                  <h4 class="font-bold text-slate-900">{{ v.nombreVacuna }}</h4>
+                  @if (v.estadoProximaDosis) {
+                    <span
+                      class="text-xs font-semibold px-2.5 py-0.5 rounded-full"
+                      [class]="
+                        v.estadoProximaDosis === 'Vencida'
+                          ? 'bg-red-100 text-red-800'
+                          : v.estadoProximaDosis === 'Pendiente'
+                            ? 'bg-amber-100 text-amber-800'
+                            : 'vet-badge-palta'
+                      "
+                    >
+                      {{ v.estadoProximaDosis }}
+                    </span>
+                  }
+                </div>
+                <p class="text-xs text-slate-600">
+                  Aplicada: <strong>{{ v.fechaAplicacion }}</strong>
+                  @if (v.fechaProximaDosis) {
+                    · Próxima dosis: <strong>{{ v.fechaProximaDosis }}</strong>
+                  }
+                </p>
+                <p class="text-xs text-slate-500">
+                  Veterinario responsable: <strong>{{ v.veterinarioResponsableNombre }}</strong>
+                </p>
+              </article>
+            } @empty {
+              <div class="bg-white rounded-2xl border border-slate-200 p-6 text-sm text-slate-500">
+                No hay vacunas registradas.
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      @if (pestanaActiva === 'tratamientos') {
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <form
+            (ngSubmit)="asignarTratamiento()"
+            class="vet-panel lg:col-span-5 bg-white rounded-2xl border p-5 shadow-xs space-y-3.5 h-fit"
+          >
+            <h3 class="vet-title text-base font-bold">Asignar medicamento o tratamiento</h3>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Elemento del catálogo clínico *</label>
+              <select
+                name="elementoCatalogoId"
+                [(ngModel)]="nuevoTratamiento.elementoCatalogoClinicoId"
+                class="vet-input w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white"
+              >
+                <option [ngValue]="0">Seleccionar...</option>
+                @for (item of catalogoClinico; track item.id) {
+                  <option [ngValue]="item.id">[{{ item.tipo }}] {{ item.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            @if (esAdministrador) {
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">ID Veterinario responsable *</label>
+                <input
+                  type="number"
+                  name="vetTratamiento"
+                  [(ngModel)]="nuevoTratamiento.veterinarioResponsableId"
+                  class="vet-input w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                />
+              </div>
+            }
+
+            <button
+              type="submit"
+              class="vet-btn-blue w-full rounded-xl text-white text-sm font-semibold py-2.5 cursor-pointer"
+            >
+              Asignar al expediente
+            </button>
+          </form>
+
+          <div class="lg:col-span-7 space-y-5">
+            <div class="space-y-3">
+              <h3 class="vet-title text-base font-bold">Vigentes ({{ tratamientosVigentes.length }})</h3>
+              @for (t of tratamientosVigentes; track t.id) {
+                <article class="vet-panel bg-white rounded-2xl border p-4 shadow-xs space-y-2">
+                  <div class="flex items-center justify-between gap-2">
+                    <div>
+                      <span class="vet-tag-palta text-[11px] font-bold uppercase">{{ t.tipo }}</span>
+                      <h4 class="font-bold text-slate-900">{{ t.nombre }}</h4>
+                    </div>
+                    <button
+                      type="button"
+                      (click)="suspenderTratamiento(t.id)"
+                      class="rounded-lg border border-red-300 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-semibold px-3 py-1.5 cursor-pointer"
+                    >
+                      Suspender
+                    </button>
+                  </div>
+                  @if (t.descripcion) {
+                    <p class="text-xs text-slate-600">{{ t.descripcion }}</p>
+                  }
+                  <p class="text-xs text-slate-500">
+                    Indicó: <strong>{{ t.veterinarioResponsableNombre }}</strong> · {{ t.asignadoEn | date: 'short' }}
+                  </p>
+                </article>
+              } @empty {
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 text-xs text-slate-500">
+                  Sin tratamientos vigentes.
+                </div>
+              }
+            </div>
+
+            <div class="space-y-3">
+              <h3 class="text-base font-bold text-slate-600">Suspendidos ({{ tratamientosSuspendidos.length }})</h3>
+              @for (t of tratamientosSuspendidos; track t.id) {
+                <article class="bg-slate-50 rounded-2xl border border-slate-200 p-4 space-y-1.5 opacity-90">
+                  <div class="flex items-center justify-between">
+                    <h4 class="font-semibold text-slate-700">{{ t.nombre }} ({{ t.tipo }})</h4>
+                    <span class="text-xs font-medium bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">
+                      Suspendido
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-500">
+                    Indicó: <strong>{{ t.veterinarioResponsableNombre }}</strong> · Suspendió:
+                    <strong>{{ t.veterinarioSuspensionResponsableNombre }}</strong>
+                    @if (t.suspendidoEn) {
+                      ({{ t.suspendidoEn | date: 'short' }})
+                    }
+                  </p>
+                </article>
+              }
+            </div>
+          </div>
+        </section>
+      }
+
+      @if (pestanaActiva === 'examenes') {
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <form
+            (ngSubmit)="subirExamen()"
+            class="vet-panel lg:col-span-5 bg-white rounded-2xl border p-5 shadow-xs space-y-3.5 h-fit"
+          >
+            <h3 class="vet-title text-base font-bold">Adjuntar examen clínico</h3>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Descripción *</label>
+              <textarea
+                name="descripcionExamen"
+                rows="3"
+                required
+                [(ngModel)]="nuevoExamen.descripcion"
+                placeholder="Ej. Hemograma completo, radiografía de tórax..."
+                class="vet-input w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              ></textarea>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Archivo (JPEG, PNG o PDF) *</label>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf"
+                (change)="onExamenSeleccionado($event)"
+                class="vet-file-input block w-full text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold"
+              />
+            </div>
+
+            @if (esAdministrador) {
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">ID Veterinario responsable *</label>
+                <input
+                  type="number"
+                  name="vetExamen"
+                  [(ngModel)]="nuevoExamen.veterinarioResponsableId"
+                  class="vet-input w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                />
+              </div>
+            }
+
+            <button
+              type="submit"
+              class="vet-btn-palta w-full rounded-xl text-white text-sm font-semibold py-2.5 cursor-pointer"
+            >
+              Subir examen
+            </button>
+          </form>
+
+          <div class="lg:col-span-7 space-y-3">
+            @for (ex of examenes; track ex.id) {
+              <article class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
+                <div class="space-y-1">
+                  <h4 class="font-bold text-slate-900">{{ ex.descripcion }}</h4>
+                  <p class="text-xs text-slate-500">
+                    Archivo: <strong>{{ ex.archivoNombre }}</strong> · Veterinario:
+                    <strong>{{ ex.veterinarioResponsableNombre }}</strong> · {{ ex.registradoEn | date: 'short' }}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  (click)="descargarExamen(ex)"
+                  class="vet-btn-blue text-white text-xs font-semibold px-3.5 py-2 rounded-lg cursor-pointer"
+                >
+                  Descargar
+                </button>
+              </article>
+            } @empty {
+              <div class="bg-white rounded-2xl border border-slate-200 p-6 text-sm text-slate-500">
+                No hay exámenes registrados.
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      @if (pestanaActiva === 'notas') {
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <form
+            (ngSubmit)="guardarNota()"
+            class="vet-panel lg:col-span-5 bg-white rounded-2xl border p-5 shadow-xs space-y-3.5 h-fit"
+          >
+            <h3 class="vet-title text-base font-bold">Nueva nota clínica</h3>
+            <p class="text-[11px] text-slate-500">
+              Las notas clínicas se conservan como registro histórico (no se editan ni eliminan).
+            </p>
+
+            <div class="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                (click)="envolverSeleccion('strong')"
+                class="rounded border border-slate-300 bg-slate-50 hover:bg-slate-100 px-2.5 py-1 text-xs font-bold cursor-pointer"
+              >
+                Negrita
+              </button>
+              <button
+                type="button"
+                (click)="envolverSeleccion('em')"
+                class="rounded border border-slate-300 bg-slate-50 hover:bg-slate-100 px-2.5 py-1 text-xs italic cursor-pointer"
+              >
+                Cursiva
+              </button>
+              <button
+                type="button"
+                (click)="insertarPlantillaLista()"
+                class="rounded border border-slate-300 bg-slate-50 hover:bg-slate-100 px-2.5 py-1 text-xs cursor-pointer"
+              >
+                Lista
+              </button>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Contenido de consulta *</label>
+              <textarea
+                #editorNota
+                name="contenidoNota"
+                rows="6"
+                required
+                [(ngModel)]="nuevaNotaHtml"
+                placeholder="<p>Hallazgos clínicos, signos vitales y observaciones...</p>"
+                class="vet-input w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono"
+              ></textarea>
+            </div>
+
+            @if (esAdministrador) {
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">ID Veterinario responsable *</label>
+                <input
+                  type="number"
+                  name="vetNota"
+                  [(ngModel)]="veterinarioNotaId"
+                  class="vet-input w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                />
+              </div>
+            }
+
+            <button
+              type="submit"
+              class="vet-btn-blue w-full rounded-xl text-white text-sm font-semibold py-2.5 cursor-pointer"
+            >
+              Registrar nota clínica
+            </button>
+          </form>
+
+          <div class="lg:col-span-7 space-y-3">
+            @for (nota of notas; track nota.id) {
+              <article class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-2">
+                <div class="nota-html text-sm text-slate-800" [innerHTML]="nota.contenidoHtml"></div>
+                <p class="text-xs text-slate-500 pt-2 border-t border-slate-100">
+                  Veterinario responsable: <strong>{{ nota.veterinarioResponsableNombre }}</strong> ·
+                  {{ nota.registradoEn | date: 'short' }}
+                </p>
+              </article>
+            } @empty {
+              <div class="bg-white rounded-2xl border border-slate-200 p-6 text-sm text-slate-500">
+                No hay notas clínicas registradas.
+              </div>
+            }
+          </div>
+        </section>
+      }
+    }
+  </main>
+</div>

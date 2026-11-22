@@ -1,0 +1,64 @@
+:host {
+  --vet-bg: #f5f7fc;
+  --vet-blue-dark: #162d5a;
+  --vet-blue-mid: #284b8a;
+  --vet-purple-mid: #5b3b8c;
+  --vet-purple-bright: #6d46a8;
+  --vet-palta: #5e7d4c;
+  --vet-palta-hover: #4a643b;
+  --vet-text-light: #ede9fe;
+}
+
+.vet-page {
+  background-color: var(--vet-bg);
+}
+
+.vet-header {
+  background-color: var(--vet-blue-dark);
+  border-bottom-color: var(--vet-palta);
+}
+
+.vet-logo-ring {
+  background-color: var(--vet-purple-mid);
+  border-color: rgba(221, 214, 254, 0.45);
+}
+
+.vet-brand-title {
+  color: var(--vet-text-light);
+}
+
+.vet-brand-subtitle {
+  color: rgba(224, 231, 255, 0.82);
+}
+
+.vet-badge {
+  background-color: rgba(109, 70, 168, 0.45);
+  color: var(--vet-text-light);
+  border-color: rgba(196, 181, 253, 0.35);
+}
+
+.vet-card {
+  border-color: rgba(22, 45, 90, 0.14);
+}
+
+.vet-card-header {
+  background-image: linear-gradient(135deg, var(--vet-blue-dark), var(--vet-purple-bright));
+}
+
+.vet-card-subtitle {
+  color: rgba(237, 233, 254, 0.92);
+}
+
+.vet-input:focus {
+  outline: none;
+  border-color: var(--vet-purple-bright);
+  box-shadow: 0 0 0 2px rgba(109, 70, 168, 0.35);
+}
+
+.vet-btn-primary {
+  background-color: var(--vet-palta);
+}
+
+.vet-btn-primary:hover:not(:disabled) {
+  background-color: var(--vet-palta-hover);
+}

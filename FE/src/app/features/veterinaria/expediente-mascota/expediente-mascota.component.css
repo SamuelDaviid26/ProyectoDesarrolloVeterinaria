@@ -1,0 +1,106 @@
+:host {
+  --vet-bg: #f5f7fc;
+  --vet-blue-dark: #162d5a;
+  --vet-blue-mid: #284b8a;
+  --vet-purple-mid: #5b3b8c;
+  --vet-purple-bright: #6d46a8;
+  --vet-purple-soft: #ede9fe;
+  --vet-palta: #5e7d4c;
+  --vet-palta-hover: #4a643b;
+  --vet-palta-soft: #eef4ea;
+  --vet-text-light: #ede9fe;
+}
+
+.vet-page {
+  background-color: var(--vet-bg);
+}
+
+.vet-header {
+  background-color: var(--vet-blue-dark);
+  border-bottom-color: var(--vet-palta);
+}
+
+.vet-header-subtitle {
+  color: rgba(224, 231, 255, 0.85);
+}
+
+.vet-btn-purple {
+  background-color: var(--vet-purple-mid);
+  border-color: rgba(221, 214, 254, 0.35);
+}
+
+.vet-btn-purple:hover:not(:disabled) {
+  background-color: var(--vet-purple-bright);
+}
+
+.vet-btn-blue {
+  background-color: var(--vet-blue-dark);
+}
+
+.vet-btn-blue:hover:not(:disabled) {
+  background-color: var(--vet-blue-mid);
+}
+
+.vet-btn-palta {
+  background-color: var(--vet-palta);
+}
+
+.vet-btn-palta:hover:not(:disabled) {
+  background-color: var(--vet-palta-hover);
+}
+
+.vet-panel {
+  border-color: rgba(22, 45, 90, 0.14);
+}
+
+.vet-photo-box {
+  background-color: var(--vet-bg);
+}
+
+.vet-title {
+  color: var(--vet-blue-dark);
+}
+
+.vet-tab-active {
+  background-color: var(--vet-blue-dark);
+  color: #ffffff;
+}
+
+.vet-input:focus {
+  outline: none;
+  border-color: var(--vet-purple-bright);
+  box-shadow: 0 0 0 2px rgba(109, 70, 168, 0.3);
+}
+
+.vet-tag-palta {
+  color: var(--vet-palta);
+}
+
+.vet-badge-palta {
+  background-color: var(--vet-palta-soft);
+  color: var(--vet-palta-hover);
+}
+
+.vet-file-input::file-selector-button {
+  background-color: var(--vet-purple-soft);
+  color: var(--vet-purple-mid);
+}
+
+.vet-file-input::file-selector-button:hover {
+  background-color: #ddd6fe;
+}
+
+.nota-html ul,
+.nota-html ol {
+  padding-left: 1.25rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.nota-html ul {
+  list-style-type: disc;
+}
+
+.nota-html ol {
+  list-style-type: decimal;
+}
